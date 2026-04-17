@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Лабораторная работа №2. Веб-ГИС</title>
     
-    <!-- ArcGIS -->
-    <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css">
-    <script src="https://js.arcgis.com/4.28/"></script>
-    
-    <!-- Mapbox -->
+    <!-- СНАЧАЛА Mapbox, чтобы избежать конфликта с ArcGIS -->
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
+    
+    <!-- ПОТОМ ArcGIS -->
+    <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.28/"></script>
     
     <style>
         body {
@@ -65,64 +65,21 @@
 
     <script>
         // =============================================
-        // 1. ARCGIS ONLINE
+        // 1. MAPBOX — запускаем сразу, без ожидания
         // =============================================
-        require(["esri/config", "esri/Map", "esri/views/MapView", "esri/Graphic", "esri/layers/GraphicsLayer"], 
-        function(esriConfig, Map, MapView, Graphic, GraphicsLayer) {
+        (function initMapbox() {
+            // Проверяем, загрузилась ли библиотека
+            if (typeof mapboxgl === 'undefined') {
+                setTimeout(initMapbox, 50);
+                return;
+            }
             
-            esriConfig.apiKey = "AAPTatrCXR40WhCYeZd7bhoyMGA..Ce2PUEsZNKScUHLZ5g9QD5HXK2IcBcx2ZlBAo3WRr6dspGt3ouZ4KkvzxDztZXliNDsDHBlZ40zoAv3TmofWvat5hhM6_M-P5bl_VoFcqrsKw-MNXYsYVciWA5Zt1oJkZBRJAfMRZWfb5FVmvTXr4vZLVhjV-pR7bwRSQ2Y4ykxxInaigOfHb6nkC5HHxoNqsZIxb902kpflZqY7Az1GIc0pCdZdzrUoxxopqzU3yagqJqc6ut1HAw..AT1_ndFWCNZQ";
-
-            const map = new Map({
-                basemap: "arcgis-topographic"
-            });
-
-            const view = new MapView({
-                container: "arcgis-map",
-                map: map,
-                center: [37.6173, 55.7558], // Красная площадь
-                zoom: 13,
-                popup: { dockEnabled: true, dockOptions: { position: "bottom-right" } }
-            });
-
-            const graphicsLayer = new GraphicsLayer();
-            map.add(graphicsLayer);
-
-            // Красная метка на Красной площади
-            const pointGraphic = new Graphic({
-                geometry: { type: "point", longitude: 37.6173, latitude: 55.7558 },
-                symbol: { type: "simple-marker", color: [255, 0, 0], size: "14px", outline: { color: [255, 255, 255], width: 1 } },
-                attributes: { title: "Красная площадь", description: "Главная площадь Москвы." },
-                popupTemplate: { title: "{title}", content: "{description}" }
-            });
-            graphicsLayer.add(pointGraphic);
-            
-            // Синий полигон вокруг Кремля
-            const polygonGraphic = new Graphic({
-                geometry: {
-                    type: "polygon",
-                    rings: [[ [37.612, 55.753], [37.623, 55.753], [37.623, 55.747], [37.612, 55.747], [37.612, 55.753] ]]
-                },
-                symbol: {
-                    type: "simple-fill",
-                    color: [0, 0, 255, 0.3],
-                    outline: { color: [0, 0, 255], width: 2 }
-                },
-                attributes: { title: "Московский Кремль", description: "Примерная территория Кремля." },
-                popupTemplate: { title: "{title}", content: "{description}" }
-            });
-            graphicsLayer.add(polygonGraphic);
-        });
-
-        // =============================================
-        // 2. MAPBOX
-        // =============================================
-        function initMapboxMap() {
             mapboxgl.accessToken = "pk.eyJ1IjoiaWRtYXh4aW0iLCJhIjoiY21vMmF5OW9zMDl0NDJzcXdua3p6OHhkeCJ9.z7RcBuipRDoX9H_V6SoOzA";
             
             const map = new mapboxgl.Map({
                 container: 'mapbox-map',
                 style: 'mapbox://styles/mapbox/streets-v12',
-                center: [37.629466, 55.762564], // Усадьба Орловых-Денисовых
+                center: [37.629466, 55.762564],
                 zoom: 16
             });
 
@@ -140,9 +97,56 @@
                     .setPopup(popup)
                     .addTo(map);
             });
-        }
+        })();
 
-        window.onload = initMapboxMap;
+        // =============================================
+        // 2. ARCGIS — запускаем с задержкой, чтобы избежать конфликта
+        // =============================================
+        setTimeout(function() {
+            require(["esri/config", "esri/Map", "esri/views/MapView", "esri/Graphic", "esri/layers/GraphicsLayer"], 
+            function(esriConfig, Map, MapView, Graphic, GraphicsLayer) {
+                
+                esriConfig.apiKey = "AAPTatrCXR40WhCYeZd7bhoyMGA..Ce2PUEsZNKScUHLZ5g9QD5HXK2IcBcx2ZlBAo3WRr6dspGt3ouZ4KkvzxDztZXliNDsDHBlZ40zoAv3TmofWvat5hhM6_M-P5bl_VoFcqrsKw-MNXYsYVciWA5Zt1oJkZBRJAfMRZWfb5FVmvTXr4vZLVhjV-pR7bwRSQ2Y4ykxxInaigOfHb6nkC5HHxoNqsZIxb902kpflZqY7Az1GIc0pCdZdzrUoxxopqzU3yagqJqc6ut1HAw..AT1_ndFWCNZQ";
+
+                const map = new Map({
+                    basemap: "arcgis-topographic"
+                });
+
+                const view = new MapView({
+                    container: "arcgis-map",
+                    map: map,
+                    center: [37.6173, 55.7558],
+                    zoom: 13,
+                    popup: { dockEnabled: true, dockOptions: { position: "bottom-right" } }
+                });
+
+                const graphicsLayer = new GraphicsLayer();
+                map.add(graphicsLayer);
+
+                const pointGraphic = new Graphic({
+                    geometry: { type: "point", longitude: 37.6173, latitude: 55.7558 },
+                    symbol: { type: "simple-marker", color: [255, 0, 0], size: "14px", outline: { color: [255, 255, 255], width: 1 } },
+                    attributes: { title: "Красная площадь", description: "Главная площадь Москвы." },
+                    popupTemplate: { title: "{title}", content: "{description}" }
+                });
+                graphicsLayer.add(pointGraphic);
+                
+                const polygonGraphic = new Graphic({
+                    geometry: {
+                        type: "polygon",
+                        rings: [[ [37.612, 55.753], [37.623, 55.753], [37.623, 55.747], [37.612, 55.747], [37.612, 55.753] ]]
+                    },
+                    symbol: {
+                        type: "simple-fill",
+                        color: [0, 0, 255, 0.3],
+                        outline: { color: [0, 0, 255], width: 2 }
+                    },
+                    attributes: { title: "Московский Кремль", description: "Примерная территория Кремля." },
+                    popupTemplate: { title: "{title}", content: "{description}" }
+                });
+                graphicsLayer.add(polygonGraphic);
+            });
+        }, 100);
     </script>
 </body>
 </html>
